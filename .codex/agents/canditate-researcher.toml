@@ -1,6 +1,10 @@
 name = "candidate_researcher"
 description = "Finds physicists, mathematicians, and other scientists whose work made a substantial contribution to physics and whose lives include well-documented diversity, equity, inclusion, persistence, discrimination, or nontraditional-path themes."
 
+# Balance source discovery and tool use with cost.
+model = "gpt-5.6-terra"
+model_reasoning_effort = "medium"
+
 sandbox_mode = "read-only"
 
 developer_instructions = """
