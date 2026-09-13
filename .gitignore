@@ -2,3 +2,12 @@
 __pycache__/
 *.pyc
 .spotlight.lock
+
+# Keep datasets and generated research local; publish only folder placeholders.
+/data/*
+!/data/.gitkeep
+!/data/archive/
+/data/archive/*
+!/data/archive/.gitkeep
+/research/*
+!/research/.gitkeep
