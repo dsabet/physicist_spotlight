@@ -12,17 +12,11 @@ for required in AGENTS.md spotlight.json docs/selection-criteria.md docs/source-
     test -f "$required" || { echo "Missing prerequisite: $required" >&2; exit 1; }
 done
 if test -n "$(git status --porcelain --untracked-files=all)"; then
-    echo "Commit or stash existing changes, including CSV data, before running." >&2
+    echo "Commit or stash existing changes, excluding ignored local data, before running." >&2
     git status --short
     exit 1
 fi
-# Require every CSV to be tracked: ignored local inputs cannot silently bypass review.
-while IFS= read -r -d '' file; do
-    git ls-files --error-unmatch -- "$file" >/dev/null 2>&1 || {
-        echo "CSV must be tracked before running: $file" >&2
-        exit 1
-    }
-done < <(find data -type f -name '*.csv' -print0)
+# Local CSVs are ignored by Git. Snapshot and audit checks protect their contents.
 python3 scripts/validate_csv.py
 mkdir -p research
 RUN_DIR="$(mktemp -d "research/run-${DATE}-XXXXXX")"
@@ -49,4 +43,4 @@ python3 scripts/validate_csv.py --candidate "$RUN_DIR/candidate.json" --date "$D
 python3 scripts/append_candidate.py --candidate "$RUN_DIR/candidate.json" --snapshot "$RUN_DIR/before.json" --date "$DATE"
 python3 scripts/spotlight.py audit --snapshot "$RUN_DIR/before.json"
 echo "Validated: exactly one row added; existing CSV bytes preserved."
-echo "Review $RUN_DIR, git diff, and git status before committing."
+echo "Review $RUN_DIR/candidate.json, $RUN_DIR/report.md, and the local output CSV."

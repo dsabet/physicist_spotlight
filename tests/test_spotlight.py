@@ -137,7 +137,7 @@ class SpotlightTests(unittest.TestCase):
         shutil.copytree(project / 'scripts', self.root / 'scripts', ignore=shutil.ignore_patterns('__pycache__'))
         shutil.copytree(project / 'docs', self.root / 'docs')
         shutil.copy(project / 'AGENTS.md', self.root)
-        (self.root / '.gitignore').write_text('__pycache__/\n.spotlight.lock\n')
+        (self.root / '.gitignore').write_text('__pycache__/\n.spotlight.lock\ndata/\nresearch/\n')
         # The fake model runs only in a disposable repository. No model/network calls.
         fake = self.root / 'codex'
         fake.write_text('#!/usr/bin/env python3\n' + '''import json,os,pathlib,re,sys
@@ -157,6 +157,8 @@ if mode == 'changed':
         for command in [['git', 'init', '-q'], ['git', 'add', '.'],
                         ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.org', 'commit', '-qm', 'Fixture']]:
             subprocess.run(command, cwd=self.root, check=True, capture_output=True)
+        tracked_data = subprocess.run(['git', 'ls-files', 'data'], cwd=self.root, check=True, capture_output=True, text=True)
+        self.assertEqual(tracked_data.stdout, '')
         env = dict(os.environ, PATH=str(self.root) + os.pathsep + os.environ['PATH'])
         original = self.output.read_bytes()
         for mode in ['missing', 'changed', 'success']:
