@@ -454,7 +454,61 @@ git commit -m "Checkpoint before spotlight research"
 This makes it easy to inspect or revert the agent's changes.
 
 ---
+## One-Command Workflow
 
+The recommended way to run the complete research workflow is:
+
+```bash
+make spotlight
+```
+
+This calls:
+
+```text
+scripts/run_spotlight.sh
+```
+
+which performs basic repository safety checks and then launches Codex with the complete annual spotlight task.
+
+The script intentionally refuses to start when tracked files contain uncommitted changes. This makes the final agent-generated diff easier to inspect and prevents unrelated work from becoming mixed with an automated research run.
+
+After the run completes, inspect the result:
+
+```bash
+make diff
+```
+
+and run the deterministic validators:
+
+```bash
+make validate
+```
+
+You can also check the repository state with:
+
+```bash
+make status
+```
+
+A normal workflow is therefore:
+
+```bash
+git pull
+make spotlight
+make validate
+make diff
+```
+
+If the research, sources, prose, and CSV changes are correct:
+
+```bash
+git add data/physicists.csv
+git commit -m "Add physicist spotlight"
+```
+
+The automated workflow deliberately does **not** create a Git commit. Human review should happen before the generated entry becomes part of the repository history.
+
+---
 # After Every Run
 
 Inspect the result:
