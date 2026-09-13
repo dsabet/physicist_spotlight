@@ -1,6 +1,10 @@
 name = "spotlight_writer"
 description = "Writes a verified spotlight about a physicist or physics-adjacent mathematician/scientist while matching the style and structure of previous CSV entries."
 
+# Draft a short structured entry from already verified facts.
+model = "gpt-5.6-luna"
+model_reasoning_effort = "medium"
+
 sandbox_mode = "read-only"
 
 developer_instructions = """
