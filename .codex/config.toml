@@ -1,0 +1,25 @@
+# .codex/config.toml
+
+# Allow the parent agent to edit files in this project.
+sandbox_mode = "workspace-write"
+
+# During development, ask before actions that require elevated permission.
+approval_policy = "on-request"
+
+# Your task depends heavily on current biographical research.
+web_search = "live"
+
+[agents]
+enabled = true
+
+# Parent + up to 4 simultaneously active subagents.
+# Three researchers in parallel leaves room for another specialist.
+max_concurrent_threads_per_session = 4
+
+# A reasonable default for research/writing subagents.
+default_subagent_reasoning_effort = "medium"
+
+[sandbox_workspace_write]
+# I would initially leave shell-level internet access off.
+# Codex's built-in web search can still be used for research.
+network_access = false
