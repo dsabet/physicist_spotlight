@@ -56,7 +56,7 @@ The final spotlight should explain both:
    Researchers must return evidence and URLs and must not modify files.
 
 3. Select the strongest candidate who:
-   - is clearly a physicist
+   - has a substantial, reliably documented contribution to physics
    - is not already represented
    - has a well-sourced story relevant to the project
    - has sufficient reliable biographical evidence
@@ -65,9 +65,15 @@ The final spotlight should explain both:
 
 5. If verification passes, delegate drafting to spotlight_writer.
 
-6. Validate the proposed row with the scripts in `scripts/`.
+6. Delegate a second review to fact_checker of the exact final row and evidence.
+   Both reviews must PASS. Record evidence and verdicts in the bundle described
+   in `docs/csv-schema.md`; any subsequent edit requires renewed review.
 
-7. Append exactly one row to `data/physicists.csv`.
+7. Follow `docs/workflow.md`. During the shell workflow, save the bundle and report
+   in the supplied run directory. Never edit CSVs directly. The runner validates
+   and appends exactly one row to the output configured in `spotlight.json`.
+   For interactive work, prepare a draft only unless an append is explicitly requested;
+   use the same snapshot, validation, append, and audit commands if authorized.
 
 Never overwrite or rewrite previous rows.
 
@@ -84,3 +90,5 @@ Writing examples and style:
 
 CSV fields:
 `docs/csv-schema.md`
+
+Execution and review gates: `docs/workflow.md`
