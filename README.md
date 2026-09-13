@@ -14,8 +14,10 @@ Requires Git, Python 3.10+ on macOS/Linux, and an installed, authenticated Codex
 Project agent definitions live in `.codex/agents/`. Read `AGENTS.md` and `docs/`.
 
 The current CSV is configured in `spotlight.json`. Historical CSVs remain under
-`data/archive/`. All CSV inputs must be tracked so Git can show resulting changes.
-Review and commit the initial data and implementation before an autonomous run.
+`data/archive/`. CSV inputs and generated `research/` records remain local and are
+ignored by Git. Only `.gitkeep` placeholders publish the empty folder structure.
+After cloning, place your current CSV at the configured output path and historical
+CSVs under `data/archive/`. Review and commit implementation changes before a run.
 No command in this project automatically commits changes.
 
 ```bash
@@ -28,8 +30,10 @@ make status
 
 Use your intended newsletter date. A run requires a clean Git state, including
 untracked files. The runner creates `research/run-*/before.json`, `candidate.json`,
-and `report.md`. Review the evidence, exact prose, validation output, and Git diff
-before committing the CSV and research records. Research artifacts are not ignored.
+and `report.md`. Review those local files, the output CSV, and validation results.
+CSV changes do not appear in Git diff; snapshot and audit checks confirm exactly
+one row was added and previous bytes were preserved. Do not force-add data or research
+to Git. Back up these local files separately.
 
 ## Components
 

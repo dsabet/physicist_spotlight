@@ -1,7 +1,7 @@
 # Execution workflow
 
 Run `make spotlight DATE=YYYY-MM-DD` from the root after reviewing and committing
-setup changes and the CSV inputs. The runner checks prerequisites, Git state, and
+setup changes. Keep CSV inputs local and ignored by Git. The runner checks prerequisites, Git state, and
 all CSVs before launching Codex. It snapshots all CSV hashes, byte lengths, and
 record counts in a unique research/run-* directory.
 
@@ -37,4 +37,7 @@ Appends use an advisory lock and atomically replace the output with its original
 bytes followed by one encoded CSV record. Other CSVs must remain unchanged.
 External editors must not modify data during a run. The parent still has workspace
 write permission: these gates detect data changes, not an adversarial parent that
-alters its own validators. Review all code and research diffs before committing.
+alters its own validators. Review code diffs before committing implementation changes.
+Review local candidate.json, report.md, and the output CSV separately. Data and
+research files are ignored by Git and must not be committed. Snapshot and audit
+checks protect local data independently of Git tracking.
