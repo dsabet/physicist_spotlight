@@ -1,5 +1,9 @@
 # .codex/config.toml
 
+# Coordinate research and review with Astra at medium effort.
+model = "gpt-6-astra"
+model_reasoning_effort = "medium"
+
 # Allow the parent agent to edit files in this project.
 sandbox_mode = "workspace-write"
 
@@ -16,7 +20,8 @@ enabled = true
 # Three researchers in parallel leaves room for another specialist.
 max_concurrent_threads_per_session = 4
 
-# A reasonable default for research/writing subagents.
+# Keep unspecified subagents on Terra rather than inheriting Astra.
+default_subagent_model = "gpt-5.6-terra"
 default_subagent_reasoning_effort = "medium"
 
 [sandbox_workspace_write]
