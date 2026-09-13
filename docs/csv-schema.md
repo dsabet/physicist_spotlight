@@ -4,7 +4,10 @@
 mapping. The default output is `data/Scientist of the Week - Fa26.csv`.
 
 Output columns, in order: Newsletter Date, Scientist, Description, Picture.
-All values are strings. The first three must be nonempty. Dates use M/D/YY and must
+Command dates use MM/DD/YYYY, such as `09/15/2026` (single-digit months/days also
+work). A four-digit year is required for command input.
+
+All CSV values are strings. The first three must be nonempty. Dates use M/D/YY and must
 be real calendar dates matching the requested newsletter date. Picture is optional.
 CSV is UTF-8; preserve its existing BOM, newline convention, and all previous bytes.
 

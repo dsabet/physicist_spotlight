@@ -3,8 +3,8 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 DATE="${1:-}"
-python3 -c 'import datetime,sys; datetime.date.fromisoformat(sys.argv[1])' "$DATE" || {
-    echo "Usage: make spotlight DATE=YYYY-MM-DD" >&2
+RUN_DATE="$(python3 scripts/spotlight.py date --date "$DATE")" || {
+    echo "Usage: make spotlight DATE=MM/DD/YYYY (for example 09/15/2026)" >&2
     exit 1
 }
 command -v codex >/dev/null || { echo "Codex CLI is required" >&2; exit 1; }
@@ -19,7 +19,7 @@ fi
 # Local CSVs are ignored by Git. Snapshot and audit checks protect their contents.
 python3 scripts/validate_csv.py
 mkdir -p research
-RUN_DIR="$(mktemp -d "research/run-${DATE}-XXXXXX")"
+RUN_DIR="$(mktemp -d "research/run-${RUN_DATE}-XXXXXX")"
 python3 scripts/spotlight.py snapshot --snapshot "$RUN_DIR/before.json"
 PROMPT="Prepare exactly one new spotlight for newsletter date $DATE.
 Follow AGENTS.md and docs/workflow.md, including parallel candidate researchers,

@@ -1,9 +1,11 @@
 # Execution workflow
 
-Run `make spotlight DATE=YYYY-MM-DD` from the root after reviewing and committing
+Run `make spotlight DATE=MM/DD/YYYY` from the root after reviewing and committing
 setup changes. Keep CSV inputs local and ignored by Git. The runner checks prerequisites, Git state, and
 all CSVs before launching Codex. It snapshots all CSV hashes, byte lengths, and
-record counts in a unique research/run-* directory.
+record counts in a unique research/run-MM-DD-YYYY-* directory. Commands accept
+American dates such as `09/15/2026` or `9/15/2026`; four-digit years are required.
+Slashes become hyphens only in folder names. CSV dates remain M/D/YY.
 
 1. Parent reads every CSV and these docs.
 2. Parallel candidate_researcher agents return candidates and evidence, read-only.
@@ -30,7 +32,7 @@ an already appended person and snapshot checks reject stale submissions.
 For an explicitly authorized interactive append, first save a snapshot with
 `python3 scripts/spotlight.py snapshot --snapshot research/BEFORE.json`, prepare and
 review the bundle, then invoke `python3 scripts/append_candidate.py --candidate
-research/CANDIDATE.json --snapshot research/BEFORE.json --date YYYY-MM-DD`.
+research/CANDIDATE.json --snapshot research/BEFORE.json --date MM/DD/YYYY`.
 Audit using `python3 scripts/spotlight.py audit --snapshot research/BEFORE.json`.
 
 Appends use an advisory lock and atomically replace the output with its original

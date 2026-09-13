@@ -18,6 +18,16 @@ FIELDS = ["Newsletter Date", "Scientist", "Description", "Picture"]
 LEGACY = ["Name", "Date in Newsletter", "Description", "Column 1"]
 
 
+def parse_newsletter_date(value):
+    """Accept American command-line dates with a four-digit year."""
+    if not re.fullmatch(r"[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}", value):
+        raise ValueError("Use an American date: MM/DD/YYYY (for example 09/15/2026)")
+    try:
+        return datetime.strptime(value, "%m/%d/%Y").date()
+    except ValueError:
+        raise ValueError("Newsletter date must be a real date in MM/DD/YYYY format") from None
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True,
                                     separators=(",", ":")).encode()).hexdigest()
@@ -114,7 +124,7 @@ def validate_bundle(root, bundle, date=None):
     row = bundle["row"]
     validate_row(row)
     check_name(root, row["Scientist"])
-    if date and datetime.strptime(row["Newsletter Date"], "%m/%d/%y").date() != datetime.strptime(date, "%Y-%m-%d").date():
+    if date and datetime.strptime(row["Newsletter Date"], "%m/%d/%y").date() != parse_newsletter_date(date):
         raise ValueError("Draft newsletter date differs from requested date")
     claims = bundle["claims"]
     if not isinstance(claims, list) or not claims:
@@ -208,12 +218,19 @@ def append(root, bundle, before, date=None):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["validate", "duplicates", "snapshot", "unchanged", "append", "audit", "hashes"])
+    parser.add_argument("command", choices=["validate", "duplicates", "snapshot", "unchanged", "append", "audit", "hashes", "date"])
     parser.add_argument("--candidate", type=Path)
     parser.add_argument("--snapshot", type=Path)
-    parser.add_argument("--date")
+    parser.add_argument("--date", help="Newsletter date in MM/DD/YYYY format")
     args = parser.parse_args(argv)
     try:
+        if args.date is not None:
+            parse_newsletter_date(args.date)
+        if args.command == "date":
+            if not args.date:
+                raise ValueError("--date MM/DD/YYYY is required")
+            print(parse_newsletter_date(args.date).strftime("%m-%d-%Y"))
+            return 0
         bundle = json.loads(args.candidate.read_text()) if args.candidate else None
         before = json.loads(args.snapshot.read_text()) if args.snapshot and args.command != "snapshot" else None
         if args.command in ("validate", "duplicates"):

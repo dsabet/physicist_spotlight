@@ -39,14 +39,14 @@ class SpotlightTests(unittest.TestCase):
     def test_append_preserves_bytes_and_quotes(self):
         original = self.output.read_bytes()
         before = s.snapshot(self.root)
-        s.append(self.root, self.bundle, before, '2026-09-15')
+        s.append(self.root, self.bundle, before, '09/15/2026')
         self.assertTrue(self.output.read_bytes().startswith(original))
         self.assertEqual(s.read_csv(self.output)[1][-1], self.bundle['row'])
         s.audit(self.root, before)
         with self.assertRaises(ValueError):
-            s.append(self.root, self.bundle, before, '2026-09-15')
+            s.append(self.root, self.bundle, before, '09/15/2026')
         with self.assertRaises(ValueError):
-            s.append(self.root, self.bundle, s.snapshot(self.root), '2026-09-15')
+            s.append(self.root, self.bundle, s.snapshot(self.root), '09/15/2026')
 
     def test_legacy_header_and_blank_record(self):
         path = self.root / 'data/archive/legacy.csv'
@@ -71,7 +71,16 @@ class SpotlightTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 s.validate_row(row)
         with self.assertRaisesRegex(ValueError, 'requested date'):
-            s.validate_bundle(self.root, self.bundle, '2026-09-16')
+            s.validate_bundle(self.root, self.bundle, '09/16/2026')
+
+    def test_american_command_dates(self):
+        for value in ['09/15/2026', '9/15/2026']:
+            self.assertEqual(s.parse_newsletter_date(value).isoformat(), '2026-09-15')
+            s.validate_bundle(self.root, self.bundle, value)
+        self.assertEqual(s.parse_newsletter_date('2/29/2028').day, 29)
+        for value in ['', '2026-09-15', '09/15/26', '13/15/2026', '2/29/2026', '9/31/2026', '../09/2026']:
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                s.parse_newsletter_date(value)
 
     def test_failed_reviews_and_stale_content(self):
         for review in ['fact_check', 'draft_check']:
@@ -100,7 +109,7 @@ class SpotlightTests(unittest.TestCase):
         original = self.output.read_bytes()
         self.bundle['draft_check']['verdict'] = 'FAIL'
         with self.assertRaises(ValueError):
-            s.append(self.root, self.bundle, before, '2026-09-15')
+            s.append(self.root, self.bundle, before, '09/15/2026')
         self.assertEqual(original, self.output.read_bytes())
 
     def test_changed_history_blocks_append(self):
@@ -108,7 +117,7 @@ class SpotlightTests(unittest.TestCase):
         original = self.output.read_bytes()
         (self.root / 'data/archive/new.csv').write_text('Newsletter Date,Scientist,Description,Picture\n')
         with self.assertRaisesRegex(ValueError, 'changed'):
-            s.append(self.root, self.bundle, before, '2026-09-15')
+            s.append(self.root, self.bundle, before, '09/15/2026')
         self.assertEqual(original, self.output.read_bytes())
 
     def test_unknown_schema_and_bad_width_fail(self):
@@ -118,7 +127,7 @@ class SpotlightTests(unittest.TestCase):
 
     def test_audit_rejects_original_edits(self):
         before = s.snapshot(self.root)
-        s.append(self.root, self.bundle, before, '2026-09-15')
+        s.append(self.root, self.bundle, before, '09/15/2026')
         self.output.write_bytes(self.output.read_bytes().replace(b'Existing description', b'Changed description'))
         with self.assertRaisesRegex(ValueError, 'original bytes'):
             s.audit(self.root, before)
@@ -128,7 +137,7 @@ class SpotlightTests(unittest.TestCase):
             with self.subTest(newline=newline):
                 self.output.write_bytes(b'\xef\xbb\xbf' + (','.join(s.FIELDS) + newline).encode())
                 original = self.output.read_bytes()
-                s.append(self.root, self.bundle, s.snapshot(self.root), '2026-09-15')
+                s.append(self.root, self.bundle, s.snapshot(self.root), '09/15/2026')
                 self.assertTrue(self.output.read_bytes().startswith(original))
                 self.assertEqual(s.read_csv(self.output)[1], [self.bundle['row']])
 
@@ -161,17 +170,26 @@ if mode == 'changed':
         self.assertEqual(tracked_data.stdout, '')
         env = dict(os.environ, PATH=str(self.root) + os.pathsep + os.environ['PATH'])
         original = self.output.read_bytes()
+        for invalid in ['', '2026-09-15', '02/30/2026']:
+            result = subprocess.run(['bash', 'scripts/run_spotlight.sh', invalid],
+                                    cwd=self.root, env=env, capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('MM/DD/YYYY', result.stderr)
+            self.assertFalse((self.root / 'research').exists())
         for mode in ['missing', 'changed', 'success']:
             # Restore only disposable fixture files between simulated runs.
             shutil.rmtree(self.root / 'research', ignore_errors=True)
             subprocess.run(['git', 'restore', 'AGENTS.md'], cwd=self.root, check=True)
             env['TEST_SPOTLIGHT_MODE'] = mode
-            result = subprocess.run(['bash', 'scripts/run_spotlight.sh', '2026-09-15'],
+            result = subprocess.run(['bash', 'scripts/run_spotlight.sh', '09/15/2026'],
                                     cwd=self.root, env=env, capture_output=True, text=True)
             with self.subTest(mode=mode):
                 if mode == 'success':
                     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                     self.assertEqual(len(s.read_csv(self.output)[1]), 2)
+                    run_dirs = list((self.root / 'research').iterdir())
+                    self.assertEqual(len(run_dirs), 1)
+                    self.assertTrue(run_dirs[0].name.startswith('run-09-15-2026-'))
                 else:
                     self.assertNotEqual(result.returncode, 0)
                     self.assertEqual(self.output.read_bytes(), original)
